@@ -1,0 +1,58 @@
+.tab-container {
+    display: flex;
+/*    justify-content: center;*/
+}
+
+.tab-container button {
+	max-width: 30%;
+    min-width: 10%;
+/*    height: 30px;*/
+    padding: 10px;
+    margin: 0 5px 0 5px;
+}
+
+.container {
+
+}
+
+.app {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+#editing, #highlighting {
+  /* Both elements need the same text and space styling so they are directly on top of each other */
+  margin: 10px;
+  padding: 10px;
+  border: 0;
+  width: calc(100% - 32px);
+  height: 150px;
+}
+
+#editing, #highlighting, #highlighting * {
+  /* Also add text styles to highlighting tokens */
+  font-size: 15pt;
+  font-family: monospace;
+  line-height: 20pt;
+}
+
+#editing, #highlighting {
+  position: fixed;
+  top: 30%;
+  left: 0;
+}
+
+/* Move the textarea in front of the result */
+#editing {
+    z-index: 1;
+    outline: none;
+  color: transparent;
+  background: transparent;
+  caret-color: black;
+  resize: none;
+  left: 25px;
+}
+
+#highlighting {
+    border: black; 
+}
