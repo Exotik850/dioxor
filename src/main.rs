@@ -23,51 +23,94 @@ enum OpenedEditor {
     JS
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug)]
+struct Editor {
+    title: String,
+    body: String,
+    cursor: usize,
+}
+
+#[derive(Debug)]
 struct EditorText {
-    html: String,
-    css: String,
-    js: String,
+    pages: Vec<Editor>
+}
+
+impl Default for EditorText {
+    fn default() -> Self {
+        Self {
+            pages: vec![
+                Editor {
+                    title: "HTML Editor".into(),
+                    body: "".into(),
+                    cursor: 0
+                },
+                Editor {
+                    title: "CSS Editor".into(),
+                    body: "".into(),
+                    cursor: 0,
+                },
+                Editor {
+                    title: "JS Editor".into(),
+                    body: "".into(),
+                    cursor: 0,
+                }
+            ]
+        }
+    }
 }
 
 impl EditorText {
-    fn get_editor(&self, editor: OpenedEditor) -> &str {
+    fn text(&self, editor: OpenedEditor) -> &Editor {
         match editor {
-            OpenedEditor::HTML => &self.html,
-            OpenedEditor::CSS => &self.css,
-            OpenedEditor::JS => &self.js,
+            OpenedEditor::HTML => &self.pages[0],
+            OpenedEditor::CSS => &self.pages[1],
+            OpenedEditor::JS => &self.pages[2],
         }
     }
 
-    fn set_editor(&mut self, editor: OpenedEditor, text: String) {
+    fn mut_text(&mut self, editor: OpenedEditor) -> &mut Editor {
         match editor {
-            OpenedEditor::HTML => self.html = text,
-            OpenedEditor::CSS => self.css = text,
-            OpenedEditor::JS => self.js = text,
+            OpenedEditor::HTML => &mut self.pages[0],
+            OpenedEditor::CSS => &mut self.pages[1],
+            OpenedEditor::JS => &mut self.pages[2],
         }
     }
 
     fn add(&mut self, editor: OpenedEditor, key: &str) {
-        match editor {
-            OpenedEditor::HTML => self.html.push_str(key),
-            OpenedEditor::CSS => self.css.push_str(key),
-            OpenedEditor::JS => self.js.push_str(key),
-        }
+        self.mut_text(editor).body.push_str(key)
     }
 
     fn backspace(&mut self, editor: OpenedEditor) {
-        match editor {
-            OpenedEditor::HTML => self.html.pop(),
-            OpenedEditor::CSS => self.css.pop(),
-            OpenedEditor::JS => self.js.pop(),
-        };
+        self.mut_text(editor).body.pop();
+    }
+
+    fn handle_input(&mut self, editor: OpenedEditor, data: &KeyboardData) {
+        let text_edit = self.mut_text(editor);
+        match data.key() {
+            Key::Character(ch) => self.add(editor, &ch),
+            Key::Tab => self.add(editor, "\t"),
+            Key::ArrowDown | Key::ArrowLeft | Key::ArrowUp | Key::ArrowRight => (),
+            Key::Enter => self.add(editor, "\n"),
+            Key::Backspace => self.backspace(editor),
+            Key::Unidentified => panic!("Unidentified key!"),
+            _ => ()
+
+        }
     }
 }
 
 fn app(cx: Scope) -> Element {
 
+
     let mut opened_editor = use_state(cx, || OpenedEditor::HTML);
-    let mut editor_text = use_state(cx, EditorText::default);
+    let mut editor_text = use_ref(cx, EditorText::default);
+
+    let textarea_element = use_state(cx, || None);
+
+    let num_lines = editor_text.read().text(**opened_editor).body.lines().count();
+
+    let binding = editor_text.read();
+    let text = binding.text(**opened_editor);
 
     render!{
         div { class: "app",
@@ -77,36 +120,31 @@ fn app(cx: Scope) -> Element {
                 button { onclick: move |_| opened_editor.set(OpenedEditor::CSS), "CSS" }
                 button { onclick: move |_| opened_editor.set(OpenedEditor::JS), "JS" }
             }
-            br {}
             div { class: "editor-container",
-                match *opened_editor.current() {
-                    OpenedEditor::HTML => "HTML editor is open!",
-                    OpenedEditor::CSS => "CSS editor is open!",
-                    OpenedEditor::JS => "JS editor is open!",
-                },
                 textarea {
                     id: "editing",
-                    value: "{editor_text.current().get_editor(**opened_editor)}",
-                    style: "caret-color: black;",
+                    value: "{text.body}",
+                    style: "caret-color: black; height: {(num_lines + 1) * 15}px",
                     spellcheck: "false",
+                    // rows: "{editor_text.current().text(**opened_editor).lines().count()}",
                     // oninput: move |event| {
                     //     let value = event.data.value.clone();
                     //     editor_text.make_mut().set_editor(**opened_editor, value);
                     // }
+                    "selectionEnd": "",
+                    prevent_default: "onkeydown",
+                    onmounted: move |cx| textarea_element.set(Some(cx.inner().clone())),
                     onkeydown: move |evt| {
-                        editor_text.with_mut(|f| {
-                            match evt.key() {
-                                Key::Character(c) => f.add(**opened_editor, &c),
-                                Key::Tab => f.add(**opened_editor, "\t"),
-                                Key::Enter => f.add(**opened_editor, "\n"),
-                                Key::Backspace => f.backspace(**opened_editor),
-                                _ => ()
+                        if matches!(&evt.data.key(), Key::ArrowDown | Key::ArrowLeft | Key::ArrowUp | Key::ArrowRight) {
+                            if let Some(ele) = textarea_element.as_ref() {
                             }
-                        })
-                    }
+                        } else {
+                            editor_text.write().handle_input(**opened_editor, &evt.data)
+                        }
+                    },
                 }
                 pre { id: "highlighting",
-                    editor_text.current().get_editor(**opened_editor).lines().chain(["\n"]).enumerate().map(|(i, line)| {
+                    text.body.lines().chain(["\n"]).enumerate().map(|(i, line)| {
                         render! {
                             div {
                                 display: "flex",
@@ -122,7 +160,7 @@ fn app(cx: Scope) -> Element {
                     })
                 }
             }
-            iframe { id: "output", dangerous_inner_html: "{editor_text.current().get_editor(OpenedEditor::HTML)}" }
+            div { id: "output", dangerous_inner_html: "{text.body}", style: "{editor_text.read().text(OpenedEditor::CSS).body}" }
         }
     }
 }

@@ -51,6 +51,7 @@
   caret-color: black;
   resize: none;
   left: 25px;
+  overflow: hidden;
 }
 
 #highlighting {
