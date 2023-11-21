@@ -1,12 +1,10 @@
-.tab-container {
+/*.tab-container {
     display: flex;
-/*    justify-content: center;*/
 }
 
 .tab-container button {
 	max-width: 30%;
     min-width: 10%;
-/*    height: 30px;*/
     padding: 10px;
     margin: 0 5px 0 5px;
 }
@@ -21,7 +19,6 @@
 }
 
 #editing, #highlighting {
-  /* Both elements need the same text and space styling so they are directly on top of each other */
   margin: 10px;
   padding: 10px;
   border: 0;
@@ -30,7 +27,6 @@
 }
 
 #editing, #highlighting, #highlighting * {
-  /* Also add text styles to highlighting tokens */
   font-size: 15pt;
   font-family: monospace;
   line-height: 20pt;
@@ -42,7 +38,6 @@
   left: 0;
 }
 
-/* Move the textarea in front of the result */
 #editing {
     z-index: 1;
     outline: none;
@@ -56,4 +51,23 @@
 
 #highlighting {
     border: black; 
+}*/
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.ControlsBox {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.PanelsBox {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
