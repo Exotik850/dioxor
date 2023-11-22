@@ -1,10 +1,10 @@
 [application]
 
 # App name
-name = "diox-editor"
+name = "dioxor"
 
 # The Dioxus platform to default to
-default_platform = "web"
+default_platform = "desktop"
 
 # `build` & `serve` output path
 out_dir = "dist"
@@ -15,7 +15,7 @@ asset_dir = "public"
 [web.app]
 
 # HTML title tag content
-title = "Diox Editor"
+title = "Dioxor"
 
 [web.watcher]
 
@@ -29,7 +29,7 @@ watch_path = ["src", "public"]
 [web.resource]
 
 # CSS style file
-style = ["./styles.css"]
+style = ["./tailwind.css"]
 
 # Javascript code file
 script = []
